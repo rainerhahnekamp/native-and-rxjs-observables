@@ -30,12 +30,23 @@ const promise = lastValueFrom(
 promise.then((value) => console.log(value));
 
 const flights$ = new Observable<{ from: string }[]>((subscriber) => {
-  fetch("https://demo.angulararchitects.io/api/flight?from=A")
+  const abortController = new AbortController();
+  fetch("https://demo.angulararchitects.io/api/flight?from=A", {
+    signal: abortController.signal,
+  })
     .then((res) => res.json())
-    .then((flights) => subscriber.next(flights));
+    .then((flights) => subscriber.next(flights))
+    .catch(() => void true);
+
+  return () => {
+    console.log("tearing down...");
+    abortController.abort();
+  };
 });
 
-flights$.subscribe((flights) => console.log(`Sub 1: ${flights.length}`));
-flights$.subscribe((flights) => console.log(`Sub 2: ${flights.length}`));
+const subscription = flights$.subscribe((flights) =>
+  console.log(`Sub 1: ${flights.length}`),
+);
+setTimeout(() => subscription.unsubscribe(), 10);
 
 console.log("finished");
