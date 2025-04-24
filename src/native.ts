@@ -9,14 +9,20 @@ const promise = input
   .filter((value) => value.length > 2)
   .last();
 
-const numbers$ = new Observable((subscriber) => {
-  console.log("starting Observable");
-  subscriber.next(1);
-  setTimeout(() => subscriber.next(2), 1000);
-  setTimeout(() => subscriber.next(3), 1500);
+const flights$ = new Observable<{ from: string }[]>((subscriber) => {
+  fetch("https://demo.angulararchitects.io/api/flight?from=A")
+    .then((res) => res.json())
+    .then((flights) => {
+      subscriber.next(flights);
+      subscriber.complete();
+    });
 });
 
-numbers$.subscribe((value) => console.log(`Sub 1: ${value}`));
-numbers$.subscribe((value) => console.log(`Sub 2: ${value}`));
+flights$.subscribe((flights) => console.log(`Sub 1: ${flights.length}`));
+setTimeout(
+  () =>
+    flights$.subscribe((flights) => console.log(`Sub 2: ${flights.length}`)),
+  1000,
+);
 
 console.log("finished");

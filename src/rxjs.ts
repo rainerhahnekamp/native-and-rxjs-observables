@@ -29,13 +29,13 @@ const promise = lastValueFrom(
 
 promise.then((value) => console.log(value));
 
-const numbers$ = new Observable((subscriber) => {
-  console.log("starting Observable");
-  subscriber.next(1);
-  setTimeout(() => subscriber.next(2), 1000);
-}).pipe(shareReplay({ refCount: true }));
+const flights$ = new Observable<{ from: string }[]>((subscriber) => {
+  fetch("https://demo.angulararchitects.io/api/flight?from=A")
+    .then((res) => res.json())
+    .then((flights) => subscriber.next(flights));
+});
 
-numbers$.subscribe((value) => console.log(`Sub 1: ${value}`));
-numbers$.subscribe((value) => console.log(`Sub 2: ${value}`));
+flights$.subscribe((flights) => console.log(`Sub 1: ${flights.length}`));
+flights$.subscribe((flights) => console.log(`Sub 2: ${flights.length}`));
 
 console.log("finished");
